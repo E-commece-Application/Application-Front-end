@@ -1,13 +1,24 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingBag, X } from "lucide-react";
+import { Search, ShoppingBag, X, User, LogOut, LayoutDashboard, Globe } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { totalItems } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -67,6 +78,50 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
+            
+            {/* User Menu */}
+            {isAuthenticated && user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative">
+                    <User size={20} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">{user.email}</p>
+                      <p className="text-xs text-muted-foreground">{user.role}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {user.role === "admin" && (
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => navigate("/scraped")}>
+                    <Globe className="mr-2 h-4 w-4" />
+                    Produits Scrappés
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout} className="text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Déconnecter
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>
+                  Login
+                </Button>
+                <Button size="sm" onClick={() => navigate("/signup")}>
+                  S'inscrire
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 

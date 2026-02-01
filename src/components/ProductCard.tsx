@@ -76,13 +76,15 @@ const ProductCard = ({
         >
           <button 
             className="w-full py-3 bg-foreground text-background text-sm font-medium uppercase tracking-wider hover:bg-primary transition-colors"
-            onClick={(e) => {
+            onClick={async (e) => {
               e.preventDefault();
-              addToCart({ id, name, price, originalPrice, image, category, isNew });
+              const success = await addToCart({ id, name, price, originalPrice, image, category, isNew });
+              if (success) {
               toast({
                 title: "Added to cart",
                 description: name,
               });
+              }
             }}
           >
             Quick Add

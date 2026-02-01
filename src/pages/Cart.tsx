@@ -1,12 +1,43 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 
 const Cart = () => {
   const { items, removeFromCart, updateQuantity, totalPrice, clearCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="py-20">
+          <div className="container-main">
+            <div className="text-center py-20">
+              <ShoppingBag className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
+              <h1 className="text-heading-lg mb-4">Please Login</h1>
+              <p className="text-muted-foreground mb-8">
+                You need to be logged in to view your cart
+              </p>
+              <div className="flex gap-4 justify-center">
+                <Link to="/login">
+                  <Button size="lg">Login</Button>
+                </Link>
+                <Link to="/signup">
+                  <Button size="lg" variant="outline">Sign Up</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -139,7 +170,7 @@ const Cart = () => {
                   </div>
                 </div>
 
-                <Button className="w-full" size="lg">
+                <Button className="w-full" size="lg" onClick={() => navigate("/checkout")}>
                   Proceed to Checkout
                 </Button>
                 

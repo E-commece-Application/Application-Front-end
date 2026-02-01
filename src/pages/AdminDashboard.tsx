@@ -191,7 +191,7 @@ const AdminDashboard = () => {
             </Card>
           )}
 
-          <div className="grid gap-8 lg:grid-cols-2">
+          <div className="grid gap-8 md:grid-cols-2">
             {/* Recent Users */}
             <Card>
               <CardHeader>

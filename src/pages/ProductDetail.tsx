@@ -37,12 +37,14 @@ const ProductDetail = () => {
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
 
-  const handleAddToCart = () => {
-    addToCart(product, quantity);
+  const handleAddToCart = async () => {
+    const success = await addToCart(product, quantity);
+    if (success) {
     toast({
       title: "Added to cart",
       description: `${quantity} × ${product.name}`,
     });
+    }
   };
 
   const discount = product.originalPrice
