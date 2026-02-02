@@ -1,13 +1,16 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { allProducts } from "@/data/products";
 import { Button } from "@/components/ui/button";
-import { Heart, ArrowLeft, ShoppingCart } from "lucide-react";
+import { Heart, ArrowLeft, ShoppingCart, Loader2 } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/context/CartContext";
+import { Product } from "@/types/product";
+
+const API_URL = "http://localhost:3000";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,32 +19,116 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
   const [isLiked, setIsLiked] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
-  const product = allProducts.find((p) => p.id === id);
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setIsLoading(true);
+      
+      // First, try to find in local products
+      const localProduct = allProducts.find((p) => p.id === id);
+      
+      if (localProduct) {
+        setProduct(localProduct);
+        // Get related products from local data
+        const related = allProducts
+          .filter((p) => p.category === localProduct.category && p.id !== localProduct.id)
+          .slice(0, 4);
+        setRelatedProducts(related);
+        setIsLoading(false);
+        return;
+      }
+      
+      // If not found locally, try API (for database products from chatbot)
+      try {
+        const response = await fetch(`${API_URL}/products/${id}`);
+        const data = await response.json();
+        
+        if (data.success && data.product) {
+          const dbProduct: Product = {
+            id: data.product._id,
+            name: data.product.name,
+            price: data.product.price,
+            image: data.product.image,
+            category: data.product.category,
+            description: data.product.description,
+            inStock: data.product.stock > 0,
+            originalPrice: data.product.originalPrice,
+            isNew: false,
+          };
+          setProduct(dbProduct);
+          
+          // Fetch related products from API
+          try {
+            const relatedResponse = await fetch(`${API_URL}/products/category/${data.product.category}`);
+            const relatedData = await relatedResponse.json();
+            if (relatedData.success) {
+              const related = relatedData.products
+                .filter((p: any) => p._id !== id)
+                .slice(0, 4)
+                .map((p: any) => ({
+                  id: p._id,
+                  name: p.name,
+                  price: p.price,
+                  image: p.image,
+                  category: p.category,
+                  description: p.description,
+                  inStock: p.stock > 0,
+                }));
+              setRelatedProducts(related);
+            }
+          } catch (err) {
+            console.error("Error fetching related products:", err);
+          }
+        } else {
+          setProduct(null);
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        setProduct(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  if (!product) {
+    if (id) {
+      fetchProduct();
+    }
+  }, [id]);
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container-main py-20 text-center">
-          <h1 className="text-heading-lg mb-4">Product Not Found</h1>
-          <Button onClick={() => navigate("/shop")}>Back to Shop</Button>
+        <div className="container-main py-20 flex items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
         <Footer />
       </div>
     );
   }
 
-  // Get related products from same category
-  const relatedProducts = allProducts
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container-main py-20 text-center">
+          <h1 className="text-heading-lg mb-4">Produit non trouvé</h1>
+          <p className="text-muted-foreground mb-6">Ce produit n'existe pas ou a été supprimé.</p>
+          <Button onClick={() => navigate("/shop")}>Retour à la boutique</Button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const handleAddToCart = async () => {
     const success = await addToCart(product, quantity);
     if (success) {
     toast({
-      title: "Added to cart",
+      title: "Ajouté au panier",
       description: `${quantity} × ${product.name}`,
     });
     }

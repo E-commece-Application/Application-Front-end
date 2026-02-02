@@ -276,7 +276,7 @@ const AdminDashboard = () => {
               <CardDescription>Common administrative tasks</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-4">
                 <Link to="/admin/products">
                   <Button className="w-full" variant="outline">
                     <Package className="mr-2 h-4 w-4" />
@@ -287,6 +287,12 @@ const AdminDashboard = () => {
                   <Button className="w-full" variant="outline">
                     <Users className="mr-2 h-4 w-4" />
                     Manage Users
+                  </Button>
+                </Link>
+                <Link to="/admin/orders">
+                  <Button className="w-full" variant="outline">
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    Manage Orders
                   </Button>
                 </Link>
                 <Link to="/admin/sales">

@@ -181,14 +181,40 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     // Always clear local state immediately
     setItems([]);
 
-    // Only clear in backend if user is authenticated
-    if (!user?.id) return;
+    // Get user ID from context or try to decode from token
+    let userId = user?.id;
+    
+    if (!userId && token) {
+      try {
+        // Decode JWT to get user ID
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        userId = payload.userId;
+      } catch (e) {
+        console.error("Failed to decode token:", e);
+      }
+    }
+
+    // If still no user ID, try localStorage token
+    if (!userId) {
+      const storedToken = localStorage.getItem("token");
+      if (storedToken) {
+        try {
+          const payload = JSON.parse(atob(storedToken.split('.')[1]));
+          userId = payload.userId;
+        } catch (e) {
+          console.error("Failed to decode stored token:", e);
+        }
+      }
+    }
+
+    if (!userId) return;
 
     // Clear in backend
     try {
-      await fetch(`${API_URL}/cart/${user.id}/clear`, {
+      await fetch(`${API_URL}/cart/${userId}/clear`, {
         method: "DELETE"
       });
+      console.log("✅ Cart cleared in backend");
     } catch (error) {
       console.error("Failed to clear cart in backend:", error);
     }

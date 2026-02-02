@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingBag, X, User, LogOut, LayoutDashboard, Globe } from "lucide-react";
+import { Search, ShoppingBag, X, User, LogOut, LayoutDashboard, Globe, Package } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
@@ -104,6 +104,10 @@ const Navbar = () => {
                   <DropdownMenuItem onClick={() => navigate("/scraped")}>
                     <Globe className="mr-2 h-4 w-4" />
                     Produits Scrappés
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/orders")}>
+                    <Package className="mr-2 h-4 w-4" />
+                    Mes Commandes
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout} className="text-red-600">

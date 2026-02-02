@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -18,6 +18,8 @@ const Checkout = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [paymentInitiated, setPaymentInitiated] = useState(false);
+  const [paymentVerified, setPaymentVerified] = useState(false);
+  const verificationDone = useRef(false);
   const { toast } = useToast();
 
   const orderId = searchParams.get("orderId");
@@ -29,6 +31,40 @@ const Checkout = () => {
   useEffect(() => {
     setShowLoginPrompt(false);
   }, [setShowLoginPrompt, location.pathname]);
+
+  // Verify payment and trigger email on success page
+  useEffect(() => {
+    if (isSuccessPath && sessionId && !verificationDone.current) {
+      verificationDone.current = true;
+      
+      // Get token from localStorage if not available from context
+      const authToken = token || localStorage.getItem("token");
+      
+      // Clear cart immediately in local state
+      clearCart();
+      
+      // Call verify payment API to trigger email sending
+      fetch(`${API_URL}/payment/verify/${sessionId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(authToken && { Authorization: `Bearer ${authToken}` }),
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Payment verification response:", data);
+          if (data.success) {
+            setPaymentVerified(true);
+            console.log("✅ Payment verified - email should be sent to user");
+          }
+        })
+        .catch((error) => {
+          console.error("Payment verification error:", error);
+        });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccessPath, sessionId]);
 
   useEffect(() => {
     // If coming from Stripe redirect (success or cancel) - handle this FIRST
@@ -123,14 +159,7 @@ const Checkout = () => {
   };
 
   // Success page - simple and clean
-  // No verification needed - Stripe already confirmed the payment
-  // Clear cart when on success page
-  useEffect(() => {
-    if (isSuccessPath) {
-      clearCart();
-    }
-  }, [isSuccessPath, clearCart]);
-
+  // Payment verification and email are triggered in the useEffect above
   if (isSuccessPath) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

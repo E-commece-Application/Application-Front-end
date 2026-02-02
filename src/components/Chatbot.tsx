@@ -25,7 +25,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "bot",
-      content: "Hello! 👋 I'm your shopping assistant. Ask me about jeans, t-shirts, TVs, sofas, or anything else!"
+      content: "Bonjour! 👋 Je suis votre assistant shopping. Demandez-moi des jeans, t-shirts, TVs, canapés, ou autre chose!"
     }
   ]);
   const [inputMessage, setInputMessage] = useState("");
@@ -68,14 +68,14 @@ const Chatbot = () => {
       } else {
         setMessages(prev => [...prev, {
           role: "bot",
-          content: "Sorry, I had trouble understanding that. Can you try asking differently?"
+          content: "Désolé, je n'ai pas compris. Pouvez-vous reformuler votre question?"
         }]);
       }
     } catch (error) {
       console.error("Chat error:", error);
       setMessages(prev => [...prev, {
         role: "bot",
-        content: "Oops! I'm having connection issues. Please try again."
+        content: "Oups! J'ai des problèmes de connexion. Veuillez réessayer."
       }]);
     } finally {
       setIsLoading(false);
@@ -90,10 +90,11 @@ const Chatbot = () => {
   };
 
   const quickQuestions = [
-    "Show me jeans under $70",
-    "What TVs do you have?",
-    "I need a sofa",
-    "Show me t-shirts"
+    "Montre-moi des jeans",
+    "Quels TVs avez-vous?",
+    "Je cherche un canapé",
+    "Montre-moi des t-shirts",
+    "Vos meilleures ventes"
   ];
 
   const handleQuickQuestion = (question: string) => {
@@ -117,15 +118,16 @@ const Chatbot = () => {
       {isOpen && (
         <Card className="fixed bottom-6 right-6 w-96 h-[600px] shadow-2xl z-50 flex flex-col">
           {/* Header */}
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b bg-primary text-primary-foreground rounded-t-lg">
             <CardTitle className="flex items-center gap-2">
-              <Bot className="h-5 w-5 text-primary" />
-              Shopping Assistant
+              <Bot className="h-5 w-5" />
+              Assistant Shopping
             </CardTitle>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsOpen(false)}
+              className="text-primary-foreground hover:bg-primary-foreground/20"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -218,7 +220,7 @@ const Chatbot = () => {
           {/* Quick Questions */}
           {messages.length <= 2 && (
             <div className="px-4 pb-2">
-              <p className="text-xs text-muted-foreground mb-2">Quick questions:</p>
+              <p className="text-xs text-muted-foreground mb-2">Questions rapides:</p>
               <div className="flex flex-wrap gap-2">
                 {quickQuestions.map((question, index) => (
                   <Button
@@ -239,7 +241,7 @@ const Chatbot = () => {
           <div className="p-4 border-t">
             <div className="flex gap-2">
               <Input
-                placeholder="Ask me anything..."
+                placeholder="Posez-moi une question..."
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
